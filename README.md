@@ -54,10 +54,10 @@ pnpm test
 
 ## Local data (gitignored)
 
-| Path | Purpose |
-| --- | --- |
+| Path    | Purpose                             |
+| ------- | ----------------------------------- |
 | `keys/` | Testnet signing keys (never commit) |
-| `.env` | Same secrets as `keys/` |
+| `.env`  | Same secrets as `keys/`             |
 
 Committed public addresses and explorer tx ids (no secrets): `data/testnet-proof.json`.
 
