@@ -6,6 +6,24 @@ import { withClient } from "./faucet.js";
 import { loadWallet } from "./keys.js";
 import { writeTestnetProof } from "./proof.js";
 
+function isString<Value>(value: Value): value is Value & string {
+  return typeof value === "string";
+}
+
+type EngineRecord = { TransactionResult?: string };
+
+function isRecord<Value>(value: Value): value is Value & EngineRecord {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function engineResult(value: TxResponse["result"]["meta"]): string | undefined {
+  if (isString(value)) return value;
+  if (isRecord(value) && isString(value.TransactionResult)) {
+    return value.TransactionResult;
+  }
+  return undefined;
+}
+
 export async function settleOnce(): Promise<{
   payoutId: string;
   destinationTag: number;
@@ -42,14 +60,9 @@ export async function settleOnce(): Promise<{
         `XRPL Payment missing hash: ${JSON.stringify(submitted.result)}`,
       );
     }
-    const engine = submitted.result.meta;
-    if (
-      engine &&
-      typeof engine === "object" &&
-      "TransactionResult" in engine &&
-      engine.TransactionResult !== "tesSUCCESS"
-    ) {
-      throw new Error(`XRPL Payment failed: ${engine.TransactionResult}`);
+    const engine = engineResult(submitted.result.meta);
+    if (engine && engine !== "tesSUCCESS") {
+      throw new Error(`XRPL Payment failed: ${engine}`);
     }
     return hash;
   });
